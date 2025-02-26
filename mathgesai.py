@@ -157,8 +157,14 @@ def send_to_AI2(canvas, fingers):
 if run:
     while True:
         success, img = cap.read()
-        img = cv2.flip(img, 1)  # Flip image horizontally
+        if not success or img is None:
+            st.error("Failed to capture image")
+            st.stop()
 
+        img = cv2.flip(img, 1)  # Flip image horizontally
+        if img is None:
+            st.error("Error: Image not loaded properly!")
+            st.stop()
         # Apply the header image
         img[0:80, 0:640] = header
 
@@ -187,3 +193,5 @@ if run:
 
     cap.release()
     cv2.destroyAllWindows()
+
+# streamlit run mathgesai.py
