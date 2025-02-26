@@ -45,7 +45,7 @@ header = myimg[0] if myimg else None
 detector = HandDetector(staticMode=False, maxHands=1, modelComplexity=0, detectionCon=0.5, minTrackCon=0.5)
 
 # OpenCV Video Capture
-webrtc_streamer(key="video")
+
 
 prev_pos = None
 text = ""
