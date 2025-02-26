@@ -8,6 +8,7 @@ from cvzone.HandTrackingModule import HandDetector
 from google import genai
 from streamlit_webrtc import webrtc_streamer
 import av
+import asyncio
 # Initialize canvas **once** (fixes the erase issue)
 canvas = np.zeros((480, 640, 3), dtype=np.uint8)
 # Initialize Streamlit layout
@@ -173,7 +174,8 @@ if run:
         return av.VideoFrame.from_ndarray(img_combined, format="bgr24")
 
 
+
+
+if __name__ == "__main__":
     webrtc_streamer(key="video", video_frame_callback=video_frame_callback)
-
-
 # streamlit run mathgesai.py
