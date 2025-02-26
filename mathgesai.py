@@ -6,7 +6,8 @@ from PIL import Image
 import streamlit as st
 from cvzone.HandTrackingModule import HandDetector
 from google import genai
-
+from streamlit_webrtc import webrtc_streamer
+import av
 # Initialize canvas **once** (fixes the erase issue)
 canvas = np.zeros((480, 640, 3), dtype=np.uint8)
 # Initialize Streamlit layout
@@ -44,9 +45,7 @@ header = myimg[0] if myimg else None
 detector = HandDetector(staticMode=False, maxHands=1, modelComplexity=0, detectionCon=0.5, minTrackCon=0.5)
 
 # OpenCV Video Capture
-cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+webrtc_streamer(key="video")
 
 prev_pos = None
 text = ""
@@ -155,43 +154,26 @@ def send_to_AI2(canvas, fingers):
 
 # Run the application
 if run:
-    while True:
-        success, img = cap.read()
-        if not success or img is None:
-            st.error("Failed to capture image")
-            st.stop()
+    def video_frame_callback(frame):
+        global canvas
+        global header
+        global prev_pos
+        img = frame.to_ndarray(format="bgr24")
 
-        img = cv2.flip(img, 1)  # Flip image horizontally
-        if img is None:
-            st.error("Error: Image not loaded properly!")
-            st.stop()
-        # Apply the header image
-        img[0:80, 0:640] = header
+        if header is not None:
+            img[0:80, 0:640] = header
 
         info = gethandinfo(img)
 
         if info:
             prev_pos, canvas, header = draw(info, prev_pos, canvas, header)
-            if q1 is False and q2 is False:
-                st.write("PLease select a Question")
-                if q1 is True:
-                    text = send_to_AI2(canvas, info[1])
-            elif q2 is True:
-                text = send_to_AI(canvas, info[1])
 
-        # Combine drawing with video
         img_combined = cv2.addWeighted(img, 0.75, canvas, 0.25, 0)
-        print("Canvas Sum:", np.sum(canvas))
 
-        FRAME_WINDOW.image(img_combined, channels="BGR")
+        return av.VideoFrame.from_ndarray(img_combined, format="bgr24")
 
-        if text:
-            output_text_area.text(text)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):  # Quit on 'q' key
-            break
+    webrtc_streamer(key="video", video_frame_callback=video_frame_callback)
 
-    cap.release()
-    cv2.destroyAllWindows()
 
 # streamlit run mathgesai.py
