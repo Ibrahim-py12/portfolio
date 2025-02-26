@@ -8,3 +8,4 @@ requests
 cvzone
 google-genai
 streamlit-webrtc
+av
