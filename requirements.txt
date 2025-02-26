@@ -1,9 +1,10 @@
 streamlit
 opencv-python
 mediapipe
-pyautogui
+
 numpy
 pillow
 matplotlib
 requests
 cvzone
+google-generativeai
