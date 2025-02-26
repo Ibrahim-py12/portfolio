@@ -9,3 +9,6 @@ cvzone
 google-genai
 streamlit-webrtc
 av
+tensorflow
+tensorflow-lite
+aioice

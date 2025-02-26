@@ -1,3 +1,12 @@
+import asyncio
+
+# Ensure a running event loop exists (fixes potential Streamlit async issues)
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
+
 import os
 import time
 import cv2
