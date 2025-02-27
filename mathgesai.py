@@ -8,7 +8,7 @@ from cvzone.HandTrackingModule import HandDetector
 from google import genai
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
 import av
-
+TF_ENABLE_ONEDNN_OPTS=0
 # Set up Streamlit layout
 st.set_page_config(layout='wide')
 col1, col2 = st.columns([2, 1])
@@ -45,7 +45,7 @@ detector = HandDetector(staticMode=False, maxHands=1, modelComplexity=0, detecti
 canvas = np.zeros((480, 640, 3), dtype=np.uint8)
 
 class VideoTransformer(VideoTransformerBase):
-    def _init_(self):
+    def __init__(self):
         self.canvas = np.zeros((480, 640, 3), dtype=np.uint8)
         self.prev_pos = None
         self.drawing_mode = False
@@ -53,14 +53,14 @@ class VideoTransformer(VideoTransformerBase):
 
     def transform(self, frame):
         global header, canvas, myimg  # Declare globals for updating header and canvas
-        img = frame.to_ndarray(format="bgr24")
-        img = cv2.flip(img, 1)  # Flip horizontally
+        image = frame.to_ndarray(format="bgr24")
+        image = cv2.flip(image, 1)  # Flip horizontally
 
         # Apply the current header at the top of the frame
-        img[0:80, 0:640] = header
+        image[0:80, 0:640] = header
 
         # Detect hand and get landmarks
-        hands, img = detector.findHands(img, draw=False, flipType=True)
+        hands, image = detector.findHands(image, draw=False, flipType=True)
         if hands:
             lmList1 = hands[0]["lmList"]
             fingers = detector.fingersUp(hands[0])
@@ -108,13 +108,13 @@ class VideoTransformer(VideoTransformerBase):
                 self.canvas.fill(0)
 
         # Combine the video frame with the drawing canvas
-        img_combined = cv2.addWeighted(img, 0.75, self.canvas, 0.25, 0)
+        img_combined = cv2.addWeighted(image, 0.75, self.canvas, 0.25, 0)
         # Update global canvas for AI processing
         canvas = self.canvas.copy()
         return av.VideoFrame.from_ndarray(img_combined, format="bgr24")
 
 # Start the video streamer using the transformer
-webrtc_streamer(key="example", video_transformer_factory=VideoTransformer)
+webrtc_streamer(key="example",  video_processor_factory=VideoTransformer)
 
 # Initialize the generative AI client
 client = genai.Client(api_key="AIzaSyBM0juGs4Z8UtQ-If_0uA780_DDyerR03M")
@@ -148,5 +148,13 @@ if st.button("Process AI Request"):
     else:
         output_text_area.text(text)
 
+# streamlit run mathgesai.py
 
-# streamlit run math_gesgr.py
+
+'''
+git add .
+git commit -m "Fixed image upload issue in math gesture AI"
+git push origin main
+
+
+'''
